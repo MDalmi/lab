@@ -1,0 +1,14 @@
+{
+  "name": "moleculer-ecommerce",
+  "version": "1.0.0",
+  "description": "Mini-laboratório: E-Commerce com Moleculer",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "moleculer": "^0.14.32",
+    "moleculer-web": "^0.10.7",
+    "nats": "^2.18.0",
+    "msgpack5": "^6.0.2"
+  }
+}

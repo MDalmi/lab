@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  nats:
+    image: nats:2-alpine
+    ports:
+      - '4222:4222'
+      - '8222:8222'
+    command: ['--http_port', '8222']
+    networks: [moleculer-net]
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:8222/healthz']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api-gateway:
+    build: .
+    environment:
+      SERVICE: api
+      NATS_URL: nats://nats:4222
+      PORT: 3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      nats: { condition: service_healthy }
+    networks: [moleculer-net]
+    restart: unless-stopped
+
+  products-service:
+    build: .
+    environment:
+      SERVICE: products
+      NATS_URL: nats://nats:4222
+    depends_on:
+      nats: { condition: service_healthy }
+    networks: [moleculer-net]
+    restart: unless-stopped
+
+  orders-service:
+    build: .
+    environment:
+      SERVICE: orders
+      NATS_URL: nats://nats:4222
+    depends_on:
+      nats: { condition: service_healthy }
+    networks: [moleculer-net]
+    restart: unless-stopped
+
+  notifications-service:
+    build: .
+    environment:
+      SERVICE: notifications
+      NATS_URL: nats://nats:4222
+    depends_on:
+      nats: { condition: service_healthy }
+    networks: [moleculer-net]
+    restart: unless-stopped
+
+networks:
+  moleculer-net:
+    driver: bridge
