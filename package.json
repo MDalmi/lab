@@ -9,6 +9,7 @@
     "moleculer": "^0.14.32",
     "moleculer-web": "^0.10.7",
     "nats": "^2.18.0",
-    "msgpack5": "^6.0.2"
+    "msgpack5": "^6.0.2",
+    "uuid": "^9.0.0"
   }
 }

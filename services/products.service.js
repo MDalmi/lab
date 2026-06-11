@@ -1,13 +1,14 @@
 "use strict";
+const { MoleculerClientError } = require("moleculer").Errors;
 
 module.exports = {
   name: "products",
 
   settings: {
     products: [
-      { id: "p1", name: "Notebook Pro",     price: 4999.99, stock: 10 },
-      { id: "p2", name: "Mouse Sem Fio",    price: 149.90,  stock: 50 },
-      { id: "p3", name: "Teclado Mecânico", price: 349.90,  stock: 25 },
+      { id: "p1", name: "Notebook Pro",      price: 4999.99, stock: 10 },
+      { id: "p2", name: "Mouse Sem Fio",     price: 149.90,  stock: 50 },
+      { id: "p3", name: "Teclado Mecânico",  price: 349.90,  stock: 25 },
     ]
   },
 
@@ -25,11 +26,22 @@ module.exports = {
       timeout: 3000,
       circuitBreaker: { enabled: true, threshold: 0.5, windowTime: 30 },
       fallback(ctx, err) {
-        return { id: ctx.params.id, name: "Produto Indisponível", cached: true };
-      },
+      // Se o erro foi "produto não encontrado", deixa o erro passar
+      if (err && err.code === "PRODUCT_NOT_FOUND")
+        throw err;
+
+      // Só retorna indisponível quando o serviço realmente caiu
+      return { id: ctx.params.id, name: "Produto Indisponível", cached: true };
+    },
       async handler(ctx) {
         const product = this.settings.products.find(p => p.id === ctx.params.id);
-        if (!product) throw new Error(`Produto ${ctx.params.id} não encontrado`);
+        if (!product)
+          throw new MoleculerClientError(
+            `Produto '${ctx.params.id}' não encontrado`,
+            404,
+            "PRODUCT_NOT_FOUND",
+            { id: ctx.params.id }
+          );
         return product;
       }
     },
@@ -39,8 +51,20 @@ module.exports = {
       async handler(ctx) {
         const { productId, quantity } = ctx.params;
         const product = this.settings.products.find(p => p.id === productId);
-        if (!product) throw new Error("Produto não encontrado");
-        if (product.stock < quantity) throw new Error("Estoque insuficiente");
+        if (!product)
+          throw new MoleculerClientError(
+            `Produto '${productId}' não encontrado`,
+            404,
+            "PRODUCT_NOT_FOUND",
+            { productId }
+          );
+        if (product.stock < quantity)
+          throw new MoleculerClientError(
+            `Estoque insuficiente para '${product.name}' (disponível: ${product.stock})`,
+            422,
+            "INSUFFICIENT_STOCK",
+            { productId, requested: quantity, available: product.stock }
+          );
         product.stock -= quantity;
         this.logger.info(`Estoque reservado: ${quantity}x ${product.name}`);
         return { success: true, product, reservedQty: quantity };
