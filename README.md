@@ -46,44 +46,22 @@ Browser ─────────────► │   API Gateway   │ :3000
 ## 🚀 Como subir o projeto
 
 ### Pré-requisitos
-- Docker Desktop rodando (ícone da baleia verde na bandeja)
+- Docker Desktop
 
 ### Subir todos os serviços
 ```bash
 docker-compose up --build
-```
+'''
 
-Aguarde até ver nos logs:
-```
-==> Serviço "api" iniciado
-==> Serviço "products" iniciado
-==> Serviço "orders" iniciado
-==> Serviço "notifications" iniciado
-```
-
-### Derrubar tudo
+### Derrubar tudo'''
 ```bash
 docker-compose down
 ```
 
 ---
 
-## 🎬 Roteiro de Demonstração (~10 minutos)
+### ✅ Parte 1 —  Listar produtos
 
----
-
-### ✅ Parte 1 — Serviços no ar (1 min)
-
-**Fala sugerida:**
-> "Todos os serviços sobem com um único comando. O NATS é o transporter — o canal pelo qual os brokers se comunicam. Cada serviço ao subir se registra automaticamente no Service Registry do Moleculer, sem nenhuma configuração de IP."
-
-**Mostrar no terminal os logs de inicialização de cada serviço.**
-
----
-
-### 📦 Parte 2 — Listar produtos (1 min)
-
-**No Postman:**
 ```
 GET http://localhost:3000/api/products
 ```
@@ -96,15 +74,10 @@ GET http://localhost:3000/api/products
   { "id": "p3", "name": "Teclado Mecânico", "price": 349.90,  "stock": 25 }
 ]
 ```
-
-**Fala sugerida:**
-> "A requisição chega no API Gateway na porta 3000, que roteia para o products-service via Moleculer. Nenhum IP foi configurado — o gateway chama products.list e o Moleculer descobre onde está."
-
 ---
 
-### 🛍️ Parte 3 — Criar pedido e ver evento (2 min)
+### 🛍️ Parte 2 — Criar pedido e ver evento 
 
-**No Postman:**
 ```
 POST http://localhost:3000/api/orders
 Content-Type: application/json
@@ -135,7 +108,6 @@ Content-Type: application/json
 [PUSH]  Seu pedido ord-xxx foi confirmado e está sendo processado!
 ```
 
-**Fala sugerida:**
 > "Aqui vemos dois padrões ao mesmo tempo. Primeiro, comunicação síncrona: o orders-service chamou o products-service para validar e reservar o estoque. Depois, comunicação assíncrona: o orders emitiu o evento order.created e o notifications reagiu automaticamente — sem que o orders soubesse que ele existe. Isso é Event-Driven."
 
 **Mostrar que o estoque diminuiu:**
@@ -146,7 +118,7 @@ GET http://localhost:3000/api/products
 
 ---
 
-### 📋 Parte 4 — Listar pedidos (30 seg)
+### 📋 Parte 3 — Listar pedidos
 
 **No Postman:**
 ```
@@ -157,13 +129,10 @@ GET http://localhost:3000/api/orders
 ```
 GET http://localhost:3000/api/orders?userId=user-42
 ```
-
-**Fala sugerida:**
 > "Os pedidos ficam em memória no container. Em produção seria um banco de dados — mas o padrão de comunicação seria o mesmo."
-
 ---
 
-### ❌ Parte 5 — Validação de erros (1 min)
+### ❌ Parte 4 — Validação de erros 
 
 **Produto inexistente — deve retornar 404:**
 ```
@@ -188,12 +157,11 @@ Content-Type: application/json
 { "error": "Estoque insuficiente para 'Mouse Sem Fio' (disponível: 50)", "code": "INSUFFICIENT_STOCK" }
 ```
 
-**Fala sugerida:**
 > "Os erros têm códigos semânticos — PRODUCT_NOT_FOUND, INSUFFICIENT_STOCK — para o front-end tratar de forma diferente. O 404 significa que não existe, o 422 significa que existe mas não pode processar."
 
 ---
 
-### ⚡ Parte 6 — Load Balancing (2 min)
+### ⚡ Parte 5 — Load Balancing
 
 **Abrir um segundo terminal e rodar:**
 ```bash
@@ -217,7 +185,7 @@ GET http://localhost:3000/api/products
 
 ---
 
-### 🔌 Parte 7 — Circuit Breaker (2 min)
+### 🔌 Parte 6 — Circuit Breaker
 
 **Derrubar o products-service:**
 ```bash
@@ -244,7 +212,6 @@ Content-Type: application/json
 }
 ```
 
-**Fala sugerida:**
 > "O products-service caiu. O Circuit Breaker detectou as falhas e abriu o circuito — agora ele nem tenta chamar o serviço, rejeita na hora e aciona o fallback. Isso evita que o orders-service fique travado esperando timeout de um serviço que claramente está fora. É a proteção contra falhas em cascata."
 
 **Subir o products-service novamente:**
@@ -257,7 +224,6 @@ docker-compose start products-service
 GET http://localhost:3000/api/products/p1
 ```
 
-**Fala sugerida:**
 > "O serviço voltou. O circuito entrou em Half-Open, deixou passar uma chamada de teste, funcionou — e voltou para Closed automaticamente. Zero intervenção manual."
 
 ---
@@ -271,7 +237,6 @@ GET http://localhost:3000/api/health
 { "status": "ok", "timestamp": "2025-..." }
 ```
 
-**Fala sugerida:**
 > "O health check é usado pelo Docker e orquestradores como Kubernetes para saber se o serviço está vivo antes de rotear tráfego para ele."
 
 ---
