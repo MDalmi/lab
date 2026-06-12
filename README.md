@@ -285,3 +285,19 @@ serializer: "MsgPack"  // binário, ~50% menor que JSON
 ```javascript
 transporter: { type: "NATS" }  // canal de comunicação entre containers
 ```
+
+### Refêrencias
+```
+Moleculer — https://moleculer.services/docs
+NATS — https://docs.nats.io
+Docker Compose — https://docs.docker.com/compose
+Istio — https://istio.io/latest/docs
+Martin Fowler & James Lewis — Microservices (martinfowler.com, 2014) — o artigo que definiu o termo
+Martin Fowler — Circuit Breaker (martinfowler.com) — explicação do padrão
+Microservices Patterns — Chris Richardson (Manning, 2018) 
+Building Microservices — Sam Newman (O'Reilly, 2021)
+Release It! — Michael Nygard (Pragmatic Bookshelf, 2018)
+```
+
+
+
