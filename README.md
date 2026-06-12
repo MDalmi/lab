@@ -228,7 +228,7 @@ GET http://localhost:3000/api/products/p1
 
 ---
 
-### 🏥 Parte 8 — Health Check (30 seg)
+### 🏥 Parte 7 — Health Check (30 seg)
 
 ```
 GET http://localhost:3000/api/health

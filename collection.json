@@ -1,0 +1,456 @@
+{
+  "info": {
+    "_postman_id": "64ffe81e-baa1-4b09-9b4d-87b4d87a768a",
+    "name": "Moleculer E-Commerce Lab",
+    "description": "Collection para demonstração do mini-laboratório de microsserviços com Moleculer.\n\nRoteiro:\n1. Listar Produtos\n2. Buscar Produto\n3. Criar Pedido\n4. Listar Pedidos\n5. Erros (404 e 422)\n6. Circuit Breaker (derrubar products-service antes)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "38838600"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Verifica se o API Gateway está no ar.\n\nEsperado: { status: 'ok', timestamp: '...' }"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Produtos",
+      "item": [
+        {
+          "name": "Listar todos os produtos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products"
+              ]
+            },
+            "description": "Retorna todos os produtos disponíveis.\n\n✅ Demonstra: API Gateway roteando para products.list via Service Discovery."
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar produto por ID (p1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/p1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "p1"
+              ]
+            },
+            "description": "Busca o produto Notebook Pro.\n\n✅ Demonstra: chamada RPC com validação de params."
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar produto por ID (p2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/p2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "p2"
+              ]
+            },
+            "description": "Busca o Mouse Sem Fio."
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar produto por ID (p3)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/p3",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "p3"
+              ]
+            },
+            "description": "Busca o Teclado Mecânico."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pedidos",
+      "item": [
+        {
+          "name": "Criar pedido (user-42, Notebook x2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"p1\",\n  \"quantity\": 2,\n  \"userId\": \"user-42\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Cria um pedido de 2x Notebook Pro para user-42.\n\n✅ Demonstra:\n- Comunicação síncrona: orders → products (validateAndReserve)\n- Comunicação assíncrona: orders emite order.created → notifications reage\n- Ver no terminal o log [EMAIL] e [PUSH] do notifications-service\n- Conferir que o stock do p1 diminuiu (chamar GET /products)"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar pedido (user-99, Mouse x1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"p2\",\n  \"quantity\": 1,\n  \"userId\": \"user-99\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Cria um pedido de 1x Mouse Sem Fio para user-99."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar todos os pedidos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Retorna todos os pedidos criados na sessão."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar pedidos do user-42",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "?userId=user-42",
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user-42"
+                }
+              ]
+            },
+            "description": "Filtra pedidos por usuário.\n\n✅ Demonstra: validação de params opcionais."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar pedidos do user-99",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "?userId=user-99",
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user-99"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Erros e Validações",
+      "item": [
+        {
+          "name": "404 — Produto inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/p99",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "p99"
+              ]
+            },
+            "description": "Busca um produto que não existe.\n\n✅ Demonstra: MoleculerClientError com código 404 e type PRODUCT_NOT_FOUND.\n\nEsperado:\n{\n  \"error\": \"Produto 'p99' não encontrado\",\n  \"code\": \"PRODUCT_NOT_FOUND\"\n}"
+          },
+          "response": []
+        },
+        {
+          "name": "422 — Estoque insuficiente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"p2\",\n  \"quantity\": 999,\n  \"userId\": \"user-42\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Tenta pedir 999 unidades de Mouse Sem Fio (stock: 50).\n\n✅ Demonstra: MoleculerClientError com código 422 e type INSUFFICIENT_STOCK.\n\nEsperado:\n{\n  \"error\": \"Estoque insuficiente para 'Mouse Sem Fio' (disponível: 50)\",\n  \"code\": \"INSUFFICIENT_STOCK\"\n}"
+          },
+          "response": []
+        },
+        {
+          "name": "422 — Validação de params (quantity negativo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"p1\",\n  \"quantity\": -5,\n  \"userId\": \"user-42\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Tenta criar pedido com quantity negativo.\n\n✅ Demonstra: validação automática de params pelo Moleculer (fastest-validator).\nO handler nem chega a executar — rejeitado antes."
+          },
+          "response": []
+        },
+        {
+          "name": "422 — Validação de params (campo faltando)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"p1\",\n  \"quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Tenta criar pedido sem o campo userId.\n\n✅ Demonstra: validação automática — campo obrigatório faltando."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Circuit Breaker",
+      "item": [
+        {
+          "name": "CB 1 — Buscar produto ANTES de derrubar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/p1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "p1"
+              ]
+            },
+            "description": "Executar ANTES de derrubar o products-service.\nDeve retornar o produto normalmente.\n\n➡️ Próximo passo: rodar no terminal:\ndocker-compose stop products-service"
+          },
+          "response": []
+        },
+        {
+          "name": "CB 2 — Buscar produto DEPOIS de derrubar (fallback)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/p1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "p1"
+              ]
+            },
+            "description": "Executar DEPOIS de derrubar o products-service.\n\n✅ Demonstra: Circuit Breaker aberto → fallback retorna produto indisponível.\n\nEsperado:\n{\n  \"id\": \"p1\",\n  \"name\": \"Produto Indisponível\",\n  \"cached\": true\n}\n\n➡️ Para restaurar:\ndocker-compose start products-service"
+          },
+          "response": []
+        },
+        {
+          "name": "CB 3 — Criar pedido com serviço fora",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"p1\",\n  \"quantity\": 1,\n  \"userId\": \"user-42\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Tentar criar pedido com products-service fora do ar.\n\n✅ Demonstra: erro claro em vez de timeout infinito.\nO orders-service falha rápido e retorna mensagem de erro."
+          },
+          "response": []
+        },
+        {
+          "name": "CB 4 — Buscar produto APÓS restaurar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/p1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "p1"
+              ]
+            },
+            "description": "Executar APÓS subir o products-service novamente.\n\n✅ Demonstra: Circuit Breaker Half-Open → chamada de teste → volta para Closed.\nRetorna o produto normalmente sem nenhuma intervenção manual."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api"
+    }
+  ]
+}
