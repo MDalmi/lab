@@ -3,6 +3,12 @@ const { ServiceBroker } = require("moleculer");
 
 const SERVICE = process.env.SERVICE || "products";
 
+const SERVICES_VALIDOS = ["products", "orders", "notifications", "api"];
+if (!SERVICES_VALIDOS.includes(SERVICE)) {
+  console.error(`Serviço inválido: "${SERVICE}". Válidos: ${SERVICES_VALIDOS.join(", ")}`);
+  process.exit(1);
+}
+
 const broker = new ServiceBroker({
   nodeID: `${SERVICE}-${process.pid}`,
   transporter: {
@@ -14,7 +20,7 @@ const broker = new ServiceBroker({
     enabled: true,
     threshold: 0.5,
     windowTime: 60,
-    minRequestCount: 20,
+    minRequestCount: 3,
     halfOpenTime: 10000
   },
   retryPolicy: {
@@ -31,6 +37,14 @@ const broker = new ServiceBroker({
 
 broker.loadService(`./services/${SERVICE}.service.js`);
 
-broker.start().then(() => {
-  broker.logger.info(`==> Serviço "${SERVICE}" iniciado com nodeID: ${broker.nodeID}`);
-});
+process.on("SIGINT",  () => broker.stop().then(() => process.exit(0)));
+process.on("SIGTERM", () => broker.stop().then(() => process.exit(0)));
+
+broker.start()
+  .then(() => {
+    broker.logger.info(`==> Serviço "${SERVICE}" iniciado com nodeID: ${broker.nodeID}`);
+  })
+  .catch(err => {
+    broker.logger.error(`Falha ao iniciar serviço "${SERVICE}": ${err.message}`);
+    process.exit(1);
+  });
